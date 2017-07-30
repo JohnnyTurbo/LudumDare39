@@ -7,6 +7,7 @@ public class Crawler : MonoBehaviour {
     public float health, moveSpeed, attackStrength, upwardsForce, getOffMyBack;
     public Sprite deadSprite;
     public bool startFlipped;
+    public int scoreValue;
 
     Rigidbody2D crawlerRb;
     CircleCollider2D headCollider;
@@ -67,7 +68,7 @@ public class Crawler : MonoBehaviour {
         }
 
         if (col.gameObject.tag == "Player") {
-            col.gameObject.GetComponent<PlayerController> ().HarmPlayer (10f);
+            col.gameObject.GetComponent<PlayerController> ().HarmPlayer (90f);
         }
 
     }
@@ -80,6 +81,7 @@ public class Crawler : MonoBehaviour {
 
     public void KillEnemy() {
         crawlerRb.AddForce (Vector2.up * upwardsForce, ForceMode2D.Impulse);
+        GameController.instance.AddToPlayerScore (scoreValue);
         bodyCollider.enabled = false;
         headCollider.enabled = false;
         crawlerAnim.enabled = false;

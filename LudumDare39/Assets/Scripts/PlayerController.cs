@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour {
 
@@ -8,17 +9,18 @@ public class PlayerController : MonoBehaviour {
     public float jumpHeight;
     public float jumpImpulseForce, jumpNormalForce;
     public float fallingGravity;
-    public float recoveryTime;
-    public float zeroToAHunnid;
-    public Transform groundCheck;
+    public float recoveryDelay;
+    public Slider healthBar;
 
-    bool canJump, isJumping, resettingJump, canRecover, isRecovering;
+    bool isJumping, resettingJump, canRecover, isRecovering;
     float maxJumpElevation, health, timeOfRecovery;
+    float  pSpeed, pRecovery, pLaser;
     FeetController feet;
     Vector2 playerInput;
     Rigidbody2D playerRb;
     Transform playerTransform;
     SpriteRenderer playerSR;
+    GameController theGC;
 
     void Awake() {
         playerRb = this.gameObject.GetComponent<Rigidbody2D> ();
@@ -38,13 +40,16 @@ public class PlayerController : MonoBehaviour {
         if (!playerSR) {
             Debug.LogError ("There is no SpriteRenderer component on the gameObject " + this.gameObject.name);
         }
+        theGC = GameObject.Find ("GameController").GetComponent<GameController> ();
     }
 
     void Start() {
-        canJump = true;
         isJumping = false;
         canRecover = true;
         health = 100f;
+        pSpeed = theGC.speedPU.effect;
+        pRecovery = theGC.recoveryPU.effect;
+        pLaser = theGC.recoveryPU.effect;
     }
 
     void Update() {
@@ -57,6 +62,10 @@ public class PlayerController : MonoBehaviour {
         if(health < 100f && Time.time > timeOfRecovery && !isRecovering) {
             StartCoroutine ("Recover");
         }
+        if(health <= 0) {
+            //GameOver();
+        }
+        healthBar.value = health / 100f;
     }
 
     void FixedUpdate() {
@@ -76,7 +85,7 @@ public class PlayerController : MonoBehaviour {
     }
 
     void MovePlayer() {
-            playerRb.velocity = new Vector2 (playerInput.x * speed, playerRb.velocity.y);
+            playerRb.velocity = new Vector2 (playerInput.x * pSpeed, playerRb.velocity.y);
         if (playerInput.x > 0) {
             //Face right
             Vector3 scaleTool = transform.localScale;
@@ -123,24 +132,31 @@ public class PlayerController : MonoBehaviour {
         health -= attackStrength;
         if (canRecover) {
             canRecover = false;
-            timeOfRecovery = Time.time + recoveryTime;
+            timeOfRecovery = Time.time + recoveryDelay;
         }
         else {
-            timeOfRecovery += recoveryTime;
+            timeOfRecovery += recoveryDelay;
         }
     }
     
     IEnumerator Recover() {
         isRecovering = true;
-
+        canRecover = true;
+        float recoveryTime = ((100f - health) * 0.01f * pRecovery);
+        float timer = 0f;
+        float startHealth = health;
         while (health < 100f) {
-            health += (100f - health) * .01f * zeroToAHunnid * Time.deltaTime;
+            if (!canRecover) {
+                yield break;
+            }
+            timer += Time.deltaTime;
+            health = Mathf.Lerp (startHealth, 100f, timer / recoveryTime);
             yield return null;
         }
         if(health >= 100f) {
             health = 100f;
         }
         isRecovering = false;
-        canRecover = true;
+
     }
 }
