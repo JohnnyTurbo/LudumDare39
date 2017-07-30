@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour {
 
@@ -13,10 +14,13 @@ public class GameController : MonoBehaviour {
     int playerScore;
     public PowerUps multiplyPU, speedPU, recoveryPU, laserPU;
     public Button multiplyButton, speedButton, recoveryButton, laserButton;
+    public GameObject PowerMenuGO, HUDGO, goButton;
+    public Slider healthBar;
 
-    int lastPUIndex;
+    int lastPUIndex = 4;
 
     void Awake() {
+
         instance = this;
         DontDestroyOnLoad (transform.gameObject);
         multiplyPU = new PowerUps (0);
@@ -27,20 +31,40 @@ public class GameController : MonoBehaviour {
         recoveryPU.SetEffect (paray);
         laserPU = new PowerUps (3);
         laserPU.SetEffect (paray);
+        PowerMenuGO.SetActive (false);
+        HUDGO.SetActive (false);
+        
     }
 
     void Start() {
         playerScore = 0;
         scoreText.text = "Score: " + playerScore.ToString();
 
-        
+    }
 
+    public void LoadScene(int sceneIndex) {
+        SceneManager.LoadScene (sceneIndex);
+    }
+
+    public void PlayNextLevel() {
+
+        Time.timeScale = 1f;
+
+        SceneManager.LoadScene (SceneManager.GetActiveScene ().buildIndex + 1);
+
+        if (PowerMenuGO.activeSelf) {
+            PowerMenuGO.SetActive (false);
+        }
     }
 
     public void AddToPlayerScore(int scoreToBeAdded) {
         scoreToBeAdded *= (int) multiplyPU.effect;
         playerScore += scoreToBeAdded;
         scoreText.text = "Score: " + playerScore.ToString();
+    }
+
+    public void SetHealthBar(float healthValue) {
+        healthBar.value = healthValue;
     }
 
     public int GetPlayerScore() {
@@ -57,7 +81,7 @@ public class GameController : MonoBehaviour {
                     multiplyButton.interactable = false;
                 }
                 multiplyPU.SetEffect (paray);
-                Debug.Log ("Multiply Power: " + multiplyPU.effect.ToString ());
+                //Debug.Log ("Multiply Power: " + multiplyPU.effect.ToString ());
                 break;
 
             case 1:     //speed
@@ -67,7 +91,7 @@ public class GameController : MonoBehaviour {
                     speedButton.interactable = false;
                 }
                 speedPU.SetEffect (paray);
-                Debug.Log ("Speed Power: " + speedPU.effect.ToString ());
+                //Debug.Log ("Speed Power: " + speedPU.effect.ToString ());
                 break;
 
             case 2:     //recovery
@@ -77,7 +101,7 @@ public class GameController : MonoBehaviour {
                     recoveryButton.interactable = false;
                 }
                 recoveryPU.SetEffect (paray);
-                Debug.Log ("Recovery Power: " + recoveryPU.effect.ToString ());
+                //Debug.Log ("Recovery Power: " + recoveryPU.effect.ToString ());
                 break;
 
             case 3:     //laser
@@ -87,17 +111,25 @@ public class GameController : MonoBehaviour {
                     laserButton.interactable = false;
                 }
                 laserPU.SetEffect (paray);
-                Debug.Log ("Laser Power: " + laserPU.effect.ToString ());
+                //Debug.Log ("Laser Power: " + laserPU.effect.ToString ());
                 break;
 
             default:
                 break;
         }
+        multiplyButton.interactable = false;
+        speedButton.interactable = false;
+        recoveryButton.interactable = false;
+        laserButton.interactable = false;
+        goButton.SetActive (true);
     }
 
     public void ShowPowerUps() {
 
-        if(multiplyPU.level > 0) {
+        PowerMenuGO.SetActive (true);
+        goButton.SetActive (false);
+
+        if (multiplyPU.level > 0) {
             multiplyButton.interactable = true;
         }
         if (speedPU.level > 0) {
@@ -122,6 +154,8 @@ public class GameController : MonoBehaviour {
                 break;
             case 3:
                 laserButton.interactable = false;
+                break;
+            default:
                 break;
         }
     }

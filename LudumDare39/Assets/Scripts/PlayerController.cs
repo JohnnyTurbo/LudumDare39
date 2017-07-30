@@ -65,7 +65,8 @@ public class PlayerController : MonoBehaviour {
         if(health <= 0) {
             //GameOver();
         }
-        healthBar.value = health / 100f;
+        //healthBar.value = health / 100f;
+        GameController.instance.SetHealthBar (health / 100f);
     }
 
     void FixedUpdate() {
@@ -73,7 +74,15 @@ public class PlayerController : MonoBehaviour {
         //Debug.Log ("Player velocity: " + playerRb.velocity);
     }
 
-    void ObtainPlayerInput() {
+    void OnTriggerEnter2D(Collider2D col) {
+
+        if (col.gameObject.tag == "FinishLine") {
+            SceneController.instance.EndLevel ();
+        }
+
+    }
+
+        void ObtainPlayerInput() {
         playerInput = new Vector2 (Input.GetAxis ("Horizontal"), 0);
         if(Input.GetButton ("Jump")) {
             Jump ();
